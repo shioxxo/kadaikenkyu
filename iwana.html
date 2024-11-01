@@ -1,0 +1,577 @@
+</script>
+</head>
+<body>
+  <canvas id="myCanvas" width="1920" height="1080"></canvas>
+</body>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>iwana</title>
+  <link rel="stylesheet" href="css/base.css" />
+  <script src="https://code.createjs.com/1.0.0/createjs.min.js"></script>
+  <script>
+    window.addEventListener("load", init);
+    function init() {
+      // ステージを作成
+      let stage = new createjs.Stage("myCanvas");
+      let count = 0;
+      let speedx = -50;
+      let speedy = 15;
+      let se = 0;
+      let r = 0;
+      let xzahyo = 0;
+      let yzahyo = 0;
+      let rm = Math.floor((100-1)*Math.random()) + 1;
+      let centerplatformList = [];
+      let rightplatformList = [];
+      let leftplatformList = [];
+      let enemy1List = [];
+      let enemy1aList = [];
+      let enemy2List = [];
+      let enemy3List = [];
+      let enemy3aList = [];
+      let boss = new createjs.Bitmap("img/slime.png");
+      boss.crossOrigin="Anonymous";
+      boss.x = 1680;
+      boss.y = 270;            
+      boss.regX = boss.getBounds().width/2;
+      boss.regY = boss.getBounds().width/2;
+
+      //タイトル画面(背景)
+      let bgt = new createjs.Shape();
+      bgt.graphics.beginFill("#00BFFF").drawRect(0,0,1760,1000);
+      stage.addChild(bgt);
+    
+
+      // シェイプ(船)を作成
+      var standozeu = new createjs.Bitmap("img/standozeu.png");//デフォルトの立ち絵
+      var runozeu = new createjs.Bitmap("img/runozeu.png");//走る立ち絵
+      var jumpozeu = new createjs.Bitmap("img/jumpozeu.png");//跳ねる立ち絵
+      var ship = standozeu;
+      ship.crossOrigin = "Anonymous";
+      ship.scaleX = 1.5;
+      ship.scaleY = 1.5;
+      ship.regX = ship.getBounds().width/2;
+      ship.regY = ship.getBounds().height;
+
+      // 画面中央に配置
+      ship.x = stage.canvas.width / 2;
+      ship.y = 1000;
+
+      //ゲームタイトル
+      let titleText = new createjs.Text("あ、イワナ2","160px sans-serif","white");
+      titleText.x = 880;
+      titleText.y = 50;
+      titleText.textAlign = "center";        
+      stage.addChild(titleText);
+
+      //スタート指示
+      let startText = new createjs.Text("クリックしてください","40px sans-serif","white");
+      startText.x = 880;
+      startText.y = 800;
+      startText.textAlign = "center";
+      stage.addChild(startText);
+        
+      //操作説明
+      let HowToPlayText = new createjs.Text("左右方向キーで移動、上方向キーでジャンプ","40px sans-serif","white");
+      HowToPlayText.x = 440;
+      HowToPlayText.y = 800;
+      HowToPlayText.textAlign = "center";
+        
+      //player画像(右)
+      let player = new createjs.Bitmap("img/standozeu.png");
+      player.crossOrigin = "Anonymous";
+      player.scaleX = 3;
+      player.scaleY = 3;
+      player.x = 300;
+      player.y = 350;
+        
+      //Boss画像
+      let Boss = new createjs.Bitmap("img/slimeShade.png");
+      Boss.crossOrigin = "Anonymous";
+      Boss.x = 1350;
+      Boss.y = 650;
+
+      //敵
+      let TEKItext = new createjs.Text("敵","80px sans-serif","red");
+      TEKItext.x = 1300;
+      TEKItext.y = 200;
+      TEKItext.textAlign = "center";
+          
+      //踏めない
+      let cannotEnemyText = new createjs.Text("踏めない","80px sans-serif","white");
+      cannotEnemyText.x = 1540;
+      cannotEnemyText.y = 300;        
+      cannotEnemyText.textAlign = "center";
+
+      //踏める
+      let enemyText = new createjs.Text("踏める","80px sans-serif","white");
+      enemyText.x = 1100;
+      enemyText.y = 300;
+      enemyText.textAlign = "center";
+
+      //プレイヤー
+      let playerText = new createjs.Text("操作キャラ","80px sans-serif","white");
+      playerText.x = 440;
+      playerText.y = 260;
+      playerText.textAlign = "center";
+
+      //ゲーム説明
+      let explanationText = new createjs.Text("守りきれ！","160px sans-serif","white");
+      explanationText.x = 880;
+      explanationText.y = 30;
+      explanationText.textAlign = "center";
+      
+      //スペースキーでスタート！
+      let STARTText = new createjs.Text("クリックでスタート!","50px sans-serif","orange");
+      STARTText.x = 880;
+      STARTText.y = 930;
+      STARTText.textAlign = "center";
+
+      //踏める敵(ネコの画像)
+      let enemy1pc = new createjs.Bitmap("img/neko.png");
+      enemy1pc.crossOrigin = "Anonymous";
+      enemy1pc.x = 1000;
+      enemy1pc.y = 500;
+      enemy1pc.scaleX = 0.2;
+      enemy1pc.scaleY = 0.2;
+      
+      //踏めない敵(丸い画像)
+      let enemy2pc = new createjs.Bitmap("img/enemy2.png");
+      enemy2pc.crossOrigin = "Anonymous";
+      enemy2pc.x = 1275;
+      enemy2pc.y = 350;
+      enemy2pc.scaleX = 0.7;
+      enemy2pc.scaleY = 0.7;
+          
+
+      let frame1 = new createjs.Shape();
+
+      frame1.graphics.beginFill("white").drawRect(70,30,1780,10);
+      let frame2 = new createjs.Shape();
+      frame2.graphics.beginFill("white").drawRect(70,30,10,1020);
+      let frame3 = new createjs.Shape();
+      frame3.graphics.beginFill("white").drawRect(1840,30,10,1020);
+      let frame0 = new createjs.Shape();
+      frame0.graphics.beginFill("white").drawRect(70,1040,1780,10);
+
+
+
+      // キーボードが押されているかの判定を行う
+      var isPressLeft = false;
+      var isPressRight = false;
+      var isPressUp = false;
+      var isPressDown = false;
+
+      // キーボードを押したタイミングを検知
+      window.addEventListener("keydown", handleKeyDown);
+      window.addEventListener("keyup", handleKeyUp);
+
+      window.addEventListener("click", handleClick);
+
+      function handleClick(){
+        if(se==0){
+          se = 1;
+          stage.removeChild(titleText);
+          stage.removeChild(startText);
+        }else if(se==1){
+          se = 2;
+          stage.removeChild(explanationText);
+          stage.removeChild(playerText);
+          stage.removeChild(enemyText);
+          stage.removeChild(cannotEnemyText);
+          stage.removeChild(TEKItext);
+          stage.removeChild(Boss);
+          stage.removeChild(player);
+          stage.removeChild(HowToPlayText);
+          stage.removeChild(bgt);
+          stage.removeChild(STARTText);
+          stage.removeChild(enemy1pc);
+          stage.removeChild(enemy2pc);
+
+          let bg = new createjs.Bitmap("img/non.jpg");
+          bg.scaleX = 7;
+          bg.scaleY = 7;
+          stage.addChild(bg);
+
+          stage.addChild(frame1);
+          stage.addChild(frame2);
+          stage.addChild(frame3);
+          stage.addChild(frame0);
+
+          for(i = 1;i < 4;i++){
+            let leftplatform = new createjs.Shape();
+            leftplatform.graphics.beginFill("white").drawRect(70,40,500,10);
+            leftplatform.x = 0;
+            leftplatform.y = i*250;
+            stage.addChild(leftplatform);
+            leftplatformList.push(leftplatform);
+          }
+
+          for(i = 1;i < 4;i++){
+            let rightplatform = new createjs.Shape();
+            rightplatform.graphics.beginFill("white").drawRect(1340,40,500,10);
+            rightplatform.x = 0;
+            rightplatform.y = i*250;
+            stage.addChild(rightplatform);
+            rightplatformList.push(rightplatform);
+          }
+
+          for(i = 1;i < 3;i++){
+            let centerplatform = new createjs.Shape();
+            centerplatform.graphics.beginFill("white").drawRect(780,-85,360,10);
+            centerplatform.x = 0;
+            centerplatform.y = i*500;
+            stage.addChild(centerplatform);
+            centerplatformList.push(centerplatform);
+          }  
+
+                  
+          }
+      }
+
+      function handleKeyDown(event) {
+        // キーコード(どのキーが押されたか)を取得
+        var keyCode = event.keyCode;
+        if (keyCode == 39) { // 右
+          isPressRight = true;// 真偽値が切り替わる
+          xzahyo = ship.x;
+          yzahyo = ship.y;
+          stage.removeChild(ship);
+          ship = runozeu;
+          ship.crossOrigin="Anonymous";
+          ship.scaleX = 1.5;
+          ship.scaleY = 1.5;
+          ship.regX = ship.getBounds().width / 2;
+          ship.regY = ship.getBounds().height;
+          ship.x = xzahyo;
+          ship.y = yzahyo;
+          stage.addChild(ship);
+        } else if (keyCode == 37) { // 左
+          isPressLeft = true;
+          xzahyo = ship.x;
+          yzahyo = ship.y;
+          stage.removeChild(ship);
+          ship = runozeu;
+          ship.crossOrigin="Anonymous";
+          ship.scaleX = -1.5;
+          ship.scaleY = 1.5;
+          ship.regX = ship.getBounds().width / 2;
+          ship.regY = ship.getBounds().height;
+          ship.x = xzahyo;
+          ship.y = yzahyo;
+          stage.addChild(ship);
+        } else if (keyCode == 40) { // 下
+          isPressDown = true;
+        } else if (keyCode == 38) { // 上
+          isPressUp = true;
+          xzahyo = ship.x;
+          zahyo = ship.y;
+          stage.removeChild(ship);
+          ship = jumpozeu;
+          ship.crossOrigin="Anonymous";
+          ship.scaleX = 1.5;
+          ship.scaleY = 1.5;
+          ship.regX = ship.getBounds().width / 2;
+          ship.regY = ship.getBounds().height;
+          ship.x = xzahyo;
+          ship.y = yzahyo;
+          stage.addChild(ship);
+        }
+      }
+
+      function handleKeyUp(event) {
+        // キーコード(どのキーが押されたか)を取得
+        var keyCode = event.keyCode;
+        if (keyCode == 39) { // 右
+          isPressRight = false;// 真偽値が切り替わる
+          xzahyo = ship.x;
+          yzahyo = ship.y;
+          stage.removeChild(ship);
+          ship = standozeu;
+          ship.crossOrigin="Anonymous";
+          ship.scaleX = 1.5;
+          ship.scaleY = 1.5;
+          ship.regX = ship.getBounds().width / 2;
+          ship.regY = ship.getBounds().height;
+          ship.x = xzahyo;
+          ship.y = yzahyo;
+          stage.addChild(ship);
+        } else if (keyCode == 37) { // 左
+          isPressLeft = false;
+          xzahyo = ship.x;
+          yzahyo = ship.y;
+          stage.removeChild(ship);
+          ship = standozeu;
+          ship.crossOrigin="Anonymous";
+          ship.scaleX = -1.5;
+          ship.scaleY = 1.5;
+          ship.regX = ship.getBounds().width / 2;
+          ship.regY = ship.getBounds().height;
+          ship.x = xzahyo;
+          ship.y = yzahyo;
+          stage.addChild(ship);
+        } else if (keyCode == 40) { // 下
+          isPressDown = false;
+        } else if (keyCode == 38) { // 上
+          isPressUp = false;
+          xzahyo = ship.x;
+          yzahyo = ship.y;
+          stage.removeChild(ship);
+          ship = standozeu;
+          ship.crossOrigin="Anonymous";
+          ship.scaleX = 1.5;
+          ship.scaleY = 1.5;
+          ship.regX = ship.getBounds().width / 2;
+          ship.regY = ship.getBounds().height;
+          ship.x = xzahyo;
+          ship.y = yzahyo;
+          stage.addChild(ship);
+        }
+      }
+      let jamp = 0;
+
+      let t = new createjs.Text("!!BOSS!!","450px serif","red")
+      t.x = 90;
+      t.y = 270;
+      // 時間経過      
+      createjs.Ticker.setFPS(60);
+      createjs.Ticker.addEventListener("tick", handleTick);
+      function handleTick(){
+        if(se==1){
+            stage.addChild(explanationText);
+            stage.addChild(playerText)
+            stage.addChild(enemyText);
+            stage.addChild(cannotEnemyText);
+            stage.addChild(TEKItext);
+            stage.addChild(Boss);
+            stage.addChild(player);
+            stage.addChild(HowToPlayText);
+            stage.addChild(STARTText);
+            stage.addChild(enemy1pc);
+            stage.addChild(enemy2pc);
+        }
+        if(se==2){
+          stage.addChild(ship);
+                      
+          // 条件文で船の位置を変更する
+          if (isPressRight == true) { // 右
+            ship.x += 10; // 移動
+          } else if (isPressLeft == true) { // 左
+            ship.x -= 10;
+          } else if (isPressUp == true) { // 上
+            if(jamp < 26){
+              ship.y -= 25
+              jamp++;
+            }
+          }   ship.y += 10
+            
+          if (ship.x < 90) {ship.x = 90;}
+          if (ship.x > 1830) {ship.x = 1830;}
+          if (ship.y < 50) {ship.y = 50;}
+          if (ship.y > 1040) {
+            ship.y = 1040;
+            jamp = 0;
+          }
+          for(i = 0;i < centerplatformList.length;i++){
+            if(centerplatformList[i].y < 125){
+                centerplatformList[i].y = 1125;
+            }
+            else{
+                centerplatformList[i].y -= 2;
+            }
+          }
+          for(i=0;i<leftplatformList.length;i++){
+              var point = leftplatformList[i].globalToLocal(ship.x,ship.y);
+              var ishit = leftplatformList[i].hitTest(point.x,point.y);
+              if(ishit == true){
+                  ship.y = leftplatformList[i].y + 30;
+                  jamp = 0;
+              }
+          }
+          for(i = 0;i < rightplatformList.length;i++){
+              var point = rightplatformList[i].globalToLocal(ship.x,ship.y);
+              var ishit = rightplatformList[i].hitTest(point.x,point.y);
+              if(ishit == true){
+                  ship.y = rightplatformList[i].y + 30;
+                  jamp = 0;
+              }
+          }
+          for(i = 0;i < centerplatformList.length;i++){
+              var point = centerplatformList[i].globalToLocal(ship.x,ship.y);
+              var ishit = centerplatformList[i].hitTest(point.x,point.y);
+              if(ishit == true){
+                  ship.y = centerplatformList[i].y - 95;
+                  jamp = 0;
+              }
+          }
+
+          stage.update(); // 画面更新
+          count++;
+          if(count>=0 && count <3600){
+              if(count%100 === 0){
+                  let enemy1a = new createjs.Shape();
+                  enemy1a.graphics.beginFill("white").drawRect(0,0,100,20);
+                  enemy1a.alpha = 0;
+                  let enemy1 = new createjs.Bitmap("img/neko.png");
+                  enemy1.crossOrigin="Anonymous";
+                  enemy1.x = 1920;
+                  enemy1.scaleX=0.1;
+                  enemy1.scaleY=0.1;
+                  var random = Math.floor( Math.random() * 4 );
+                  enemy1.y = (random * 250 ) + 180;
+                  enemy1a.x = 1915;
+                  enemy1a.y = enemy1.y -10;
+                  stage.addChild(enemy1);
+                  enemy1List.push(enemy1);
+                  stage.addChild(enemy1a);
+                  enemy1aList.push(enemy1a);
+                  stage.setChildIndex(enemy1,1);
+                  stage.setChildIndex(enemy1a,1);
+              }
+              if(count%200 === 0){
+                  let enemy3a = new createjs.Shape();
+                  enemy3a.graphics.beginFill("white").drawRect(0,0,100,20);
+                  enemy3a.alpha = 0;
+                  let enemy3 = new createjs.Bitmap("img/nekoleft.png");
+                  enemy3.crossOrigin="Anonymous";
+                  enemy3.x = 0;
+                  enemy3.scaleX=0.1;
+                  enemy3.scaleY=0.1;
+                  var random = Math.floor( Math.random() * 4 );
+                  enemy3.y = (random * 250 ) + 180;
+                  enemy3a.x = 15;
+                  enemy3a.y = enemy3.y -10;
+                  stage.addChild(enemy3);
+                  enemy3List.push(enemy3);
+                  stage.addChild(enemy3a);
+                  enemy3aList.push(enemy3a);
+                  stage.setChildIndex(enemy3,1);
+                  stage.setChildIndex(enemy3a,1);
+              }
+              if(count%450 === 0){
+                  let enemy2 = new createjs.Bitmap("img/enemy2.png");
+                  enemy2.crossOrigin="Anonymous";
+                  enemy2.x = 1920;
+                  enemy2.scaleX=0.55;
+                  enemy2.scaleY=0.55;
+                  enemy2.regX = enemy2.getBounds().width/2;
+                  enemy2.regY = enemy2.getBounds().height/2;
+                  var random = Math.floor( Math.random() * 4 );
+                  enemy2.y = (random * 250 ) + 140;
+                  stage.addChild(enemy2);
+                  enemy2List.push(enemy2);
+              }
+              for(let i = 0;i < enemy1List.length ; i++){
+                  let enemy1aLocal = enemy1aList[i].globalToLocal(ship.x,ship.y);
+                  let enemy1Local = enemy1List[i].globalToLocal(ship.x,ship.y);
+                  if(enemy1aList[i].hitTest(enemy1aLocal.x ,enemy1aLocal.y)){
+                      stage.removeChild(enemy1aList[i]);enemy1aList.splice(i,1);
+                      stage.removeChild(enemy1List[i]);enemy1List.splice(i,1);
+                      jump=0;
+                      ship.y -= 50;
+                  }
+                  if(enemy1List[i].x < 0){
+                    stage.removeChild(enemy1List[i]);enemy1List.splice(i,1);
+                    stage.removeChild(enemy1aList[i]);enemy1aList.splice(i,1);
+                  } 
+                  if(enemy1List[i].hitTest(enemy1Local.x,enemy1Local.y)){
+                      gameOver();
+                  }
+                  enemy1List[i].x -= 8;
+                  enemy1aList[i].x -= 8;
+              }
+              for(let i = 0;i < enemy2List.length ; i++){
+                    enemy2List[i].x -= 8; 
+                    if(enemy2List[i].x < 0){
+                        stage.removeChild(enemy2List[i]);enemy2List.splice(i,1);
+                    } 
+                    let enemy2Local = enemy2List[i].localToLocal(0,0,ship);
+                  if(ship.x >= enemy2List[i].x - 83.5 && ship.x <= enemy2List[i].x + 83.5 && ship.y >= enemy2List[i].y - 85 && ship.y <= enemy2List[i].y + 83.5){
+                      gameOver();
+                  }
+              }
+              for(let i = 0;i < enemy3List.length ; i++){
+                  let enemy3aLocal = enemy3aList[i].globalToLocal(ship.x,ship.y);
+                  let enemy3Local = enemy3List[i].globalToLocal(ship.x,ship.y);
+                  if(enemy3aList[i].hitTest(enemy3aLocal.x ,enemy3aLocal.y)){
+                      stage.removeChild(enemy3aList[i]);enemy3aList.splice(i,1);
+                      stage.removeChild(enemy3List[i]);enemy3List.splice(i,1);
+                      jump=0;
+                      ship.y -= 50;
+                  }
+                  if(enemy3List[i].x>1920){
+                    stage.removeChild(enemy3List[i]);enemy3List.splice(i,1);
+                    stage.removeChild(enemy3aList[i]);enemy3aList.splice(i,1);
+                  } 
+                  if(enemy3List[i].hitTest(enemy3Local.x,enemy3Local.y)){
+                      gameOver();
+                  }
+                  enemy3List[i].x += 8;
+                  enemy3aList[i].x += 8;
+              }
+          }
+          if(count >= 3420 && count <3600){
+              stage.addChild(t);
+          }
+          if(count >= 3600){
+            stage.removeChild(t);
+              for(let i = 0;i < enemy1List.length;i++){
+                  stage.removeChild(enemy1List[i]);
+                  stage.removeChild(enemy1aList[i]);
+                  enemy1List.splice(i,1);
+                  enemy1aList.splice(i,1);
+              }
+              for(let i = 0;i < enemy2List.length;i++){
+                  stage.removeChild(enemy2List[i]);
+                  enemy2List.splice(i,1);
+              }
+              for(let i = 0;i < enemy3List.length;i++){
+                  stage.removeChild(enemy3List[i]);
+                  stage.removeChild(enemy3aList[i]);
+                  enemy3List.splice(i,1);
+                  enemy3aList.splice(i,1);
+              }
+              stage.addChild(boss);
+              if(rm >= 98){
+                  if(boss.x <= 100){
+                      speedx = 15;
+                  }else if(boss.x > 1680){
+                      rm = 51;
+                  }
+                  boss.x += speedx;
+              }else{
+                  speedx = -40;
+                  if(boss.y > 940){
+                      speedy =- 20;
+                  }else if(boss.y < 140){
+                      speedy = 20;
+                  }
+                      boss.y += speedy;
+                        rm = Math.floor((100-1)*Math.random()) + 1;
+                }
+
+                let localPoint=boss.globalToLocal(ship.x,ship.y);
+                if(boss.hitTest(localPoint.x,localPoint.y)){
+                    gameOver();
+                }
+            }
+            if(count >= 5400){
+              stage.removeChild(boss);
+              alert("ゲームクリアおめでとう！みごとイワナを守りきった！")
+            }
+        }
+        stage.update();
+      }
+    }
+    function gameOver(){
+        alert("あ、イワナを盗られてしまった！");
+        createjs.Ticker.removeAllEventListeners();
+        stage.removeAllEventListeners();
+    }
+  </script>
+</head>
+<body>
+  <canvas id="myCanvas" width="1920" height="1080"></canvas>
+</body>
+</html>
